@@ -2,7 +2,7 @@
 name = "typestring-parser"
 version = "0.1"
 description = "Parse type strings into typing instances"
-authors = ["Dominik1123 <<>>"]
+authors = ["Dominik1123"]
 license = "MIT"
 readme = "README.rst"
 homepage = "https://github.com/Dominik1123/typestring-parser"
