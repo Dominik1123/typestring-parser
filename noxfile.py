@@ -1,11 +1,10 @@
 """Nox sessions."""
-import shutil
+
 import sys
 from pathlib import Path
 from textwrap import dedent
 
 import nox
-import nox_poetry.patch
 from nox.sessions import Session
 
 

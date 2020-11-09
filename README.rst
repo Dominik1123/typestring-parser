@@ -48,7 +48,7 @@ Use the `parse` function to convert type strings into `typing`_ instances:
 .. code:: python
 
    >>> from typestring_parser import parse
-   >>> 
+   >>>
    >>> parse('int')
    <class 'int'>
    >>> parse('int or str')

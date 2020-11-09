@@ -1,13 +1,23 @@
-import builtins
+"""Provide the `parse` function which serves as the main entry point."""
+
 import typing
 from unittest.mock import patch
 
 from pyparsing import (
-    Word, alphas, alphanums, delimitedList, infixNotation, nestedExpr, opAssoc,
-    ParseException
+    Word,
+    alphas,
+    alphanums,
+    delimitedList,
+    infixNotation,
+    nestedExpr,
+    opAssoc,
+    ParseException,
 )
 
 from .errors import UnsupportedTypeString
+
+
+__all__ = ["parse"]
 
 
 def parse(type_string: str, *, func=None):
@@ -20,30 +30,35 @@ def parse(type_string: str, *, func=None):
 
     Returns:
         The corresponding typing instance (or type).
+
+    Raises:
+        UnsupportedTypeString: If the given type string cannot be parsed.
     """
     try:
-        token, = EXPR.parseString(type_string, parseAll=True).asList()
+        (token,) = EXPR.parseString(type_string, parseAll=True).asList()
     except ParseException:
         raise UnsupportedTypeString(type_string) from None
     type_hint = convert(token)
 
     if func is None:
+
         def func(x: type_hint):
             pass
-        tp = typing.get_type_hints(func, {}, {})['x']
+
+        tp = typing.get_type_hints(func, {}, {})["x"]
     else:
-        with patch.object(func, '__annotations__', dict(x=type_hint)):
-            tp = typing.get_type_hints(func)['x']
+        with patch.object(func, "__annotations__", dict(x=type_hint)):
+            tp = typing.get_type_hints(func)["x"]
     return tp
 
 
-class TokenGroup:
+class _TokenGroup:
     def convert(self):
         """Convert the token group to a `typing` instance."""
         raise NotImplementedError
 
 
-class Tuple(TokenGroup):
+class _Tuple(_TokenGroup):
     def __init__(self, tokens):
         self.args = tuple(tokens.asList()[0])
 
@@ -51,33 +66,32 @@ class Tuple(TokenGroup):
         return typing.Tuple[self.args]
 
 
-class BinaryOperatorGroup(TokenGroup):
+class _BinaryOperatorGroup(_TokenGroup):
     def __init__(self, tokens):
         self.left, self.right = tokens[0][0::2]
 
 
-class Sequence(BinaryOperatorGroup):
+class _Sequence(_BinaryOperatorGroup):
     def convert(self):
         return getattr(typing, self.left.capitalize())[convert(self.right)]
 
 
-class Union(BinaryOperatorGroup):
+class _Union(_BinaryOperatorGroup):
     def convert(self):
         return typing.Union[convert(self.left), convert(self.right)]
 
 
-def convert(obj: typing.Union[str, TokenGroup]):
+def convert(obj: typing.Union[str, _TokenGroup]):
     """Convert the given object to a typing instance unless it is a string."""
-    if isinstance(obj, TokenGroup):
+    if isinstance(obj, _TokenGroup):
         return obj.convert()
     return obj
 
 
-NAME = Word(alphas + '_', alphanums + '_')
-TUPLE = nestedExpr(content=delimitedList(NAME)).setParseAction(Tuple)
+NAME = Word(alphas + "_", alphanums + "_")
+TUPLE = nestedExpr(content=delimitedList(NAME)).setParseAction(_Tuple)
 
 EXPR = infixNotation(
     NAME | TUPLE,
-    [('of', 2, opAssoc.RIGHT, Sequence),
-     ('or', 2, opAssoc.RIGHT, Union)],
+    [("of", 2, opAssoc.RIGHT, _Sequence), ("or", 2, opAssoc.RIGHT, _Union)],
 )
