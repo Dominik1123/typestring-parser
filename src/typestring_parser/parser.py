@@ -3,7 +3,7 @@
 import typing
 from unittest.mock import patch
 
-from pyparsing import (
+from pyparsing import (  # type: ignore
     Word,
     alphas,
     alphanums,
@@ -42,10 +42,10 @@ def parse(type_string: str, *, func=None):
 
     if func is None:
 
-        def func(x: type_hint):
+        def _func(x: type_hint):  # type: ignore
             pass
 
-        tp = typing.get_type_hints(func, {}, {})["x"]
+        tp = typing.get_type_hints(_func, {}, {})["x"]
     else:
         with patch.object(func, "__annotations__", dict(x=type_hint)):
             tp = typing.get_type_hints(func)["x"]
