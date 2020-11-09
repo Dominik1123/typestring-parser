@@ -33,7 +33,7 @@ typestring parser
 Installation
 ------------
 
-You can install *typestring parser* via pip_ from PyPI_:
+You can install ``typestring-parser`` via pip_ from PyPI_:
 
 .. code:: console
 
@@ -43,7 +43,7 @@ You can install *typestring parser* via pip_ from PyPI_:
 Usage
 -----
 
-Use the `parse` function to convert type strings into `typing`_ instances:
+Use the ``parse`` function to convert type strings into `typing`_ instances:
 
 .. code:: python
 
